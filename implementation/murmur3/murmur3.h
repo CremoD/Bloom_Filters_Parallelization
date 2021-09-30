@@ -1,0 +1,1 @@
+uint64_t murmur_hash_64(const void * key, int len, uint64_t seed);

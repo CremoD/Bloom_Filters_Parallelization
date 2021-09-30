@@ -1,0 +1,258 @@
+# Makefile IntroParCo- Hannes + Davide x 2
+# Just a test...for now
+
+sha = git rev-parse --short HEAD
+
+ifeq ($(OS),Windows_NT)
+ baseline = .\baseline.exe
+ omp = .\baseline_omp.exe
+ lock_s = .\lock_striping.exe
+ atomic = .\atomic.exe
+ reduction = .\reduction.exe
+ lockStriping = .\lockstriping.exe
+else
+ baseline = ./baseline
+ omp = ./baseline_omp
+ lock_s = ./lock_striping
+ atomic = ./atomic
+ reduction = ./reduction
+ lockStriping = ./lockstriping
+endif	
+
+
+baseline: Baseline.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c
+	gcc -DDEBUG -O3 -fopenmp -o baseline Baseline.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c xoshiro256starstar/xoshiro256starstar.c -lm
+	$(baseline) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000
+full_baseline:Baseline.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c check-vars
+	gcc -DDEBUG -O3 -fopenmp -o baseline Baseline.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c xoshiro256starstar/xoshiro256starstar.c -lm
+	$(baseline) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 >> ../results/$(out).csv
+	$(baseline) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 >> ../results/$(out).csv
+	$(baseline) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 >> ../results/$(out).csv
+	$(baseline) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 >> ../results/$(out).csv
+	$(baseline) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 >> ../results/$(out).csv
+	$(baseline) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 >> ../results/$(out).csv
+	$(baseline) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 >> ../results/$(out).csv
+	$(baseline) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 >> ../results/$(out).csv
+omp: BaselineOpenMP.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c
+	gcc -DDEBUG -DGITSHA=XY -O3 -fopenmp -o baseline_omp BaselineOpenMP.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c xoshiro256starstar/xoshiro256starstar.c -lm
+	$(omp) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 4 2 >> ../results/$(omp).csv
+	$(omp) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 4 4 >> ../results/$(omp).csv
+	$(omp) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 4 8 >> ../results/$(omp).csv
+	$(omp) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 4 32 >> ../results/$(omp).csv
+	$(omp) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 4 128 >> ../results/$(omp).csv
+	$(omp) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 4 512 >> ../results/$(omp).csv
+	$(omp) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 4 1024 >> ../results/$(omp).csv
+full_omp: BaselineOpenMP.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c
+	gcc -DDEBUG -O3 -fopenmp -o baseline_omp BaselineOpenMP.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c xoshiro256starstar/xoshiro256starstar.c -lm
+	$(omp) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(omp) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 32 >> ../results/$(out).csv
+
+atomic: Atomic.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c
+	gcc -DDEBUG -O3 -fopenmp -o atomic Atomic.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c xoshiro256starstar/xoshiro256starstar.c -lm
+	$(atomic) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 4 
+full_atomic: Atomic.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c
+	gcc -DDEBUG -O3 -fopenmp -o atomic Atomic.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c xoshiro256starstar/xoshiro256starstar.c -lm
+	$(atomic) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(atomic) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 32 >> ../results/$(out).csv
+reduction: OMPReduction.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c
+	gcc -DDEBUG -O3 -fopenmp -o reduction OMPReduction.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c xoshiro256starstar/xoshiro256starstar.c -lm
+	$(reduction) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 2 4
+full_reduction: OMPReduction.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c
+	gcc -DDEBUG -O3 -fopenmp -o reduction OMPReduction.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c xoshiro256starstar/xoshiro256starstar.c -lm
+	$(reduction) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(reduction) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 32 >> ../results/$(out).csv
+lockStriping: LockStriping.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c
+	gcc -DDEBUG -O3 -fopenmp -o lockstriping LockStriping.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c xoshiro256starstar/xoshiro256starstar.c -lm
+	$(lockStriping) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 2
+full_lockStriping: LockStriping.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c
+	gcc -DDEBUG -O3 -fopenmp -o lockstriping LockStriping.c bloom/bloom.c murmur3/murmur3.c dataloader/dataloader.c utility/utility.c experiment/experiment.c xoshiro256starstar/xoshiro256starstar.c -lm
+	$(lockStriping) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_1000000.csv ../datasets/stringsTest_n_10_m_1000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_10000000.csv ../datasets/stringsTest_n_10_m_10000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_10_m_100000000.csv ../datasets/stringsTest_n_10_m_100000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_1000000.csv ../datasets/stringsTest_n_20_m_1000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_10000000.csv ../datasets/stringsTest_n_20_m_10000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsInput_n_20_m_100000000.csv ../datasets/stringsTest_n_20_m_100000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsPLInput-a2_n_60_m_1000000.csv ../datasets/stringsPLTest-a2_n_60_m_1000000.csv 123 6 100000 32 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 1 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 2 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 4 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 8 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 16 >> ../results/$(out).csv
+	$(lockStriping) ../datasets/stringsPLInput-a2_n_60_m_10000000.csv ../datasets/stringsPLTest-a2_n_60_m_10000000.csv 123 6 100000 32 >> ../results/$(out).csv
+check-vars:
+ifndef out
+	$(error out path variable of the results is undefined (add out=your_result_path to specify it))
+endif
