@@ -4,4 +4,4 @@ This project analyses different approaches for the parallelisation of Bloom filt
 
 More specifically, we focused on CPU parallelisation, implementing various approaches using OpenMP, comparing a sequential baseline with an OpenMP baseline, an implementation using atomic operations and an algorithm based on the reduction strategy and a filter for each thread.
 
-For more details, check the complete [report](report.pdf).
+For more details, check the complete [report](projectReport.pdf).
